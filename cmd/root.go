@@ -47,6 +47,12 @@ func init() {
 
 	slog.Info("Application initialized")
 	fmt.Println("Application initialized")
+
+	defer func() {
+		if LogFile != nil {
+			LogFile.Close()
+		}
+	}()
 }
 
 func getBreadcrumb(path string) string {
@@ -59,6 +65,15 @@ func getBreadcrumb(path string) string {
 
 func run(cmd *cobra.Command, args []string) {
 	fmt.Println("Starting run function...")
+	slog.Info("Starting run function")
+
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Error("Panic occurred", "error", r)
+			fmt.Println("An unexpected error occurred. Please check the log file for details.")
+		}
+	}()
+
 	currentPath, err := os.Getwd()
 	if err != nil {
 		slog.Error("Failed to get current directory", "error", err)
